@@ -92,6 +92,9 @@ public class Gesture {
     }
 
     public Point centroid() {
+        if (this.path.size() == 0) {
+            return new Point(0, 0);
+        }
         int sumx = 0;
         int sumy = 0;
         for (Point p : this.path) {
