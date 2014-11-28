@@ -5,23 +5,31 @@ import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.util.List;
 
 import main.Gesture;
 import main.Point;
 
-public class MyCanvas extends Canvas {
+public class MyCanvas extends Canvas implements MouseListener,
+        MouseMotionListener {
 
     private int centerX;
     private int centerY;
 
-    private Gesture gesture;
-    private Point centerpoint;
+    private Gesture gesture = new Gesture();
 
     private boolean isdrawpath = false;
     private boolean isdrawcenter = false;
 
+    private boolean isdrawing = false;
+
     public MyCanvas() {
+        this.addMouseListener(this);
+        this.addMouseMotionListener(this);
+        this.isdrawing = false;
     }
 
     private void drawLine(Graphics g, int x1, int y1, int x2, int y2) {
@@ -32,6 +40,7 @@ public class MyCanvas extends Canvas {
     public void paint(Graphics gra) {
         centerX = this.getWidth() / 2;
         centerY = this.getHeight() / 2;
+        Point centerpoint = gesture.centroid();
         Graphics2D g = (Graphics2D) gra;
         g.drawLine(0, 0, this.getWidth(), this.getHeight());
         g.drawLine(0, this.getHeight(), this.getWidth(), 0);
@@ -39,6 +48,9 @@ public class MyCanvas extends Canvas {
                 this.getHeight() / 2);
         g.drawLine(this.getWidth() / 2, 0, this.getWidth() / 2,
                 this.getHeight());
+        g.setPaint(Color.BLACK);
+        g.setStroke(new BasicStroke(10));
+        drawLine(g, 0, 0, 0, 0);
 
         if (isdrawpath) {
             List<Point> list = gesture.getList();
@@ -75,18 +87,59 @@ public class MyCanvas extends Canvas {
         this.repaint();
     }
 
-    public void drawGestureWithCenter(Gesture gesture, Point center) {
-        this.gesture = gesture;
-        this.centerpoint = center;
-        this.isdrawcenter = true;
-        this.isdrawpath = true;
-        this.repaint();
+    public void setIsDrawCenter(boolean isdraw) {
+        this.isdrawcenter = isdraw;
     }
 
     public void clear() {
         this.isdrawcenter = false;
         this.isdrawpath = false;
+        this.gesture = new Gesture();
         this.repaint();
     }
 
+    public Gesture getGesture() {
+        return this.gesture;
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        this.isdrawing = true;
+        this.gesture = new Gesture();
+        this.isdrawpath = true;
+        this.isdrawcenter = false;
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        this.isdrawing = false;
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        if (isdrawing) {
+            this.gesture.add(pointTransform(e.getX(), e.getY()));
+            this.repaint();
+        }
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+    }
+
+    private Point pointTransform(int x, int y) {
+        return new Point(x - this.getWidth() / 2, y - this.getHeight() / 2);
+    }
 }

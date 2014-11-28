@@ -1,7 +1,5 @@
 package test;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,8 +14,14 @@ import main.Point;
 public class TestGUI {
     private static final long serialVersionUID = 1L;
 
-    private JFrame mainFrame = new JFrame();
+    private static int CANVAS_HEIGHT = 500;
+    private static int CANVAS_WIDTH = 500;
+    private static int TOOLBAR_WIDTH = 100;
+
+    private JFrame mainFrame = new JFrame("GR_Demo");
     private MyCanvas canvas = new MyCanvas();
+
+    private JButton button_example = new JButton("example");
 
     private JButton button_resample = new JButton("resample");
     private JButton button_centroid = new JButton("centroid");
@@ -25,64 +29,78 @@ public class TestGUI {
     private JButton button_scale = new JButton("scale");
     private JButton button_rotate = new JButton("rotate");
 
-    private Gesture gesture = new Gesture().add(new Point(1, 1))
-            .add(new Point(100, 1)).add(new Point(100, 100))
-            .add(new Point(1, 100)).add(new Point(-255, -255));
-
     private void buildGUI() {
-        canvas.setSize(500, 500);
-        mainFrame.add(BorderLayout.CENTER, canvas);
+        mainFrame.setLayout(null);
+        mainFrame.add(canvas);
+        canvas.setBounds(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(10, 1));
+        panel.add(button_example);
         panel.add(button_resample);
         panel.add(button_centroid);
         panel.add(button_translate);
         panel.add(button_scale);
         panel.add(button_rotate);
 
+        button_example.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                canvas.drawGesture(new Gesture().add(new Point(1, 1))
+                        .add(new Point(100, 1)).add(new Point(100, 100))
+                        .add(new Point(1, 100)).add(new Point(-255, -255)));
+            }
+        });
+
         button_resample.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                gesture.resample();
-                canvas.drawGesture(gesture);
+                canvas.getGesture().resample();
+                canvas.setIsDrawCenter(false);
+                canvas.repaint();
             }
         });
         button_centroid.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                canvas.drawGestureWithCenter(gesture, gesture.centroid());
+                canvas.setIsDrawCenter(true);
+                canvas.repaint();
             }
         });
         button_translate.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                gesture.translate();
-                canvas.drawGestureWithCenter(gesture, gesture.centroid());
+                canvas.getGesture().translate();
+                canvas.setIsDrawCenter(true);
+                canvas.repaint();
             }
         });
         button_scale.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                gesture.scaleTo(200, 200);
-                canvas.drawGestureWithCenter(gesture, gesture.centroid());
+                canvas.getGesture().scaleTo(CANVAS_WIDTH, CANVAS_HEIGHT);
+                canvas.setIsDrawCenter(true);
+                canvas.repaint();
             }
         });
         button_rotate.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                gesture.rotate();
-                canvas.drawGestureWithCenter(gesture, gesture.centroid());
+                canvas.getGesture().rotate();
+                canvas.setIsDrawCenter(true);
+                canvas.repaint();
             }
         });
 
-        mainFrame.add(BorderLayout.EAST, panel);
+        mainFrame.add(panel);
+        panel.setBounds(CANVAS_WIDTH, 0, TOOLBAR_WIDTH, CANVAS_HEIGHT);
     }
 
     public TestGUI() {
+        mainFrame.setResizable(false);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         buildGUI();
-        mainFrame.setSize(600, 600);
+        mainFrame.setSize(CANVAS_WIDTH + TOOLBAR_WIDTH, CANVAS_HEIGHT);
         mainFrame.setVisible(true);
     }
 
