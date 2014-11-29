@@ -16,6 +16,8 @@ import main.Point;
 public class MyCanvas extends Canvas implements MouseListener,
         MouseMotionListener {
 
+    private static long POINTCATCHER_TIMEINTERVAL = 20;
+
     private int centerX;
     private int centerY;
 
@@ -25,6 +27,25 @@ public class MyCanvas extends Canvas implements MouseListener,
     private boolean isdrawcenter = false;
 
     private boolean isdrawing = false;
+
+    private MouseEvent mouseEvent;
+
+    private Runnable pointCatcherRunnable = new Runnable() {
+        @Override
+        public void run() {
+            while (isdrawing) {
+                try {
+                    gesture.add(pointTransform(mouseEvent.getX(),
+                            mouseEvent.getY()));
+                    MyCanvas.this.repaint();
+                    Thread.sleep(POINTCATCHER_TIMEINTERVAL);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    };
+    private Thread pointCatcherThread;
 
     public MyCanvas() {
         this.addMouseListener(this);
@@ -120,18 +141,21 @@ public class MyCanvas extends Canvas implements MouseListener,
         this.gesture = new Gesture();
         this.isdrawpath = true;
         this.isdrawcenter = false;
+        this.pointCatcherThread = new Thread(pointCatcherRunnable);
+        this.mouseEvent = e;
+        this.pointCatcherThread.start();
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
         this.isdrawing = false;
+        this.mouseEvent = e;
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
         if (isdrawing) {
-            this.gesture.add(pointTransform(e.getX(), e.getY()));
-            this.repaint();
+            this.mouseEvent = e;
         }
     }
 
