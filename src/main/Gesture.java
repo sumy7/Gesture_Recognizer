@@ -10,21 +10,46 @@ public class Gesture {
     private List<Point> path;
     private Point center;
 
+    private double[] vector;
+
+    private String name;
+
     public Gesture() {
+        this.name = "";
         this.path = new ArrayList<Point>();
     }
 
-    public Gesture(List<Point> pathList) {
+    public Gesture(String name) {
+        this.name = name;
+        this.path = new ArrayList<Point>();
+    }
+
+    public Gesture(String name, List<Point> pathList) {
         if (pathList == null) {
             throw new IllegalArgumentException("参数列表为空");
         }
         if (pathList.size() == 0) {
             throw new IllegalArgumentException("路径个数为空");
         }
+        this.name = name;
         this.path = pathList;
     }
 
-    public Gesture(Integer[] pathList) {
+    public Gesture(String name, Point[] pathList) {
+        if (pathList == null) {
+            throw new IllegalArgumentException("参数列表为空");
+        }
+        if (pathList.length == 0) {
+            throw new IllegalArgumentException("路径个数为空");
+        }
+        this.name = name;
+        this.path = new ArrayList<Point>();
+        for (Point p : pathList) {
+            this.path.add(p);
+        }
+    }
+
+    public Gesture(String name, Integer[] pathList) {
         if (pathList == null) {
             throw new IllegalArgumentException("参数列表为空");
         }
@@ -34,11 +59,20 @@ public class Gesture {
         if (pathList.length % 2 != 0) {
             throw new IllegalArgumentException("坐标不完整");
         }
+        this.name = name;
         this.path = new ArrayList<Point>();
         for (int i = 0; i < pathList.length; i += 2) {
             Point p = new Point(pathList[i], pathList[i + 1]);
             this.path.add(p);
         }
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public Gesture add(Point point) {
@@ -179,12 +213,32 @@ public class Gesture {
         rotateBy(-rotateAngle());
     }
 
+    public double[] getVector() {
+        vectorize();
+        return this.vector;
+    }
+
     public void standardization(double width, double height) {
         resample();
         centroid();
         translate();
         scaleTo(width, height);
         rotate();
+    }
+
+    private void vectorize() {
+        double sum = 0.0;
+        vector = new double[RESAMPLE_SIZE * 2];
+        for (int i = 0; i < RESAMPLE_SIZE; i++) {
+            Point p = this.path.get(i);
+            vector[2 * i] = p.getX();
+            vector[2 * i + 1] = p.getY();
+            sum += p.getX() * p.getX() + p.getY() * p.getY();
+        }
+        double magnitude = Math.sqrt(sum);
+        for (int i = 0; i < RESAMPLE_SIZE * 2; i++) {
+            vector[i] /= magnitude;
+        }
     }
 
     private double len(double ax, double ay, double bx, double by) {
