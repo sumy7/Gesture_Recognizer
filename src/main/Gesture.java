@@ -153,6 +153,8 @@ public class Gesture {
     }
 
     public void scaleTo(double width, double height) {
+        double halfwidth = width / 2;
+        double halfheight = height / 2;
         double maxx = Double.NEGATIVE_INFINITY;
         double maxy = Double.NEGATIVE_INFINITY;
         double minx = Double.POSITIVE_INFINITY;
@@ -170,16 +172,16 @@ public class Gesture {
         if (SCALE_RATIO > 0) {
             double longside = Math.max(maxx - minx, maxy - miny);
             double shortside = Math.min(maxx - minx, maxy - miny);
-            double uniformly = shortside / longside * SCALE_RATIO;
-            if (uniformly > 0) {
-                double scaleX = width / longside;
-                double scaleY = height / longside;
+            boolean uniformly = (shortside / longside) < SCALE_RATIO;
+            if (uniformly) {
+                double scaleX = halfwidth / longside;
+                double scaleY = halfheight / longside;
                 scale(scaleX, scaleY);
                 return;
             }
         }
-        double scaleX = width / (maxx - minx);
-        double scaleY = height / (maxy - miny);
+        double scaleX = halfwidth / (maxx - minx);
+        double scaleY = halfheight / (maxy - miny);
         scale(scaleX, scaleY);
     }
 
